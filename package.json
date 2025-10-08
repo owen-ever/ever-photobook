@@ -1,0 +1,48 @@
+{
+  "name": "next-test",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format-lint": "bun run format && bun run lint",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^7.0.2",
+    "@tanstack/react-query": "^5.72.2",
+    "framer-motion": "^12.23.22",
+    "jotai": "^2.12.2",
+    "lucide-react": "^0.545.0",
+    "next": "15.2.4",
+    "next-intl": "^4.0.2",
+    "react": "^19.0.0",
+    "react-cookies": "^0.1.1",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@next/eslint-plugin-next": "^15.3.0",
+    "@tailwindcss/postcss": "^4",
+    "@tanstack/eslint-plugin-query": "^5.72.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-cookies": "^0.1.4",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.4",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.6",
+    "husky": "^9.1.7",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

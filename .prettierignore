@@ -1,0 +1,11 @@
+*.md
+*.mdx
+*.json
+*.yaml
+*.yml
+*.toml
+*.lockb
+*.lock
+dockerfile
+*.txt
+*.log
