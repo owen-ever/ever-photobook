@@ -12,7 +12,6 @@ import { calculateImageDimensions as calcDims } from '@/lib/image';
 // ============================================================================
 // CUSTOMIZATION CONSTANTS
 // ============================================================================
-const D_PLUS_INCREMENT_FACTOR = 3; // Subtle D+ animation strength (2-4 recommended)
 const LONG_PRESS_THRESHOLD_MS = 400; // Long press detection threshold
 const SHOW_INDICATORS = false; // Toggle slide indicators
 
@@ -41,31 +40,50 @@ const AnniversaryGallery = ({
   const clickCountRef = useRef<number>(0);
   const clickTimerRef = useRef<NodeJS.Timeout>(null);
 
-  // Calculate D+ days
-  useEffect(() => {
-    try {
-      const anniversary = new Date(anniversaryDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      anniversary.setHours(0, 0, 0, 0);
+  // Helper: parse YYYY-MM-DD from image basename, ignore trailing -index
+  const parseDateFromPath = useCallback((path: string): Date | null => {
+    const basename = path.split('/').pop() || path;
+    const match = basename.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return null;
+    const [, year, month, day] = match;
+    // 한국 시간 기준으로 날짜 생성
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    if (isNaN(date.getTime())) return null;
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
 
-      const diffTime = today.getTime() - anniversary.getTime();
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-      setDaysCount(diffDays);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('Failed to parse anniversary date:', error);
-      setDaysCount(null);
-    }
-  }, [anniversaryDate]);
-
-  const { progress, activeIndex } = useScrollProgress(containerRef, images.length);
+  const { activeIndex } = useScrollProgress(containerRef, images.length);
   const { width: viewportWidth, height: viewportHeight } = useViewportDimensions();
   const isMobile = useIsMobile();
 
-  // Calculate display value with subtle increment
-  const displayDays = daysCount !== null ? daysCount + Math.floor(progress * D_PLUS_INCREMENT_FACTOR) : null;
+  // Calculate D days based on active image filename date vs anniversaryDate (Korean time)
+  useEffect(() => {
+    try {
+      const anniversary = new Date(anniversaryDate);
+      anniversary.setHours(0, 0, 0, 0);
+
+      const currentSrc = images[activeIndex];
+      const imageDate = currentSrc ? parseDateFromPath(currentSrc) : null;
+
+      if (!imageDate) {
+        setDaysCount(null);
+        return;
+      }
+
+      const diffTime = imageDate.getTime() - anniversary.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      setDaysCount(diffDays);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to compute D+ from filename/anniversaryDate:', error);
+      setDaysCount(null);
+    }
+  }, [anniversaryDate, images, activeIndex, parseDateFromPath]);
+
+  // Calculate D label without progress-based animation to avoid off-by errors
+  const sign = daysCount !== null ? (daysCount >= 0 ? '+' : '-') : '';
+  const displayValue = daysCount !== null ? Math.abs(daysCount + 1) : null;
 
   // Calculate optimal image dimensions based on viewport and image aspect ratio
   const calculateImageDimensions = useCallback(
@@ -256,13 +274,13 @@ const AnniversaryGallery = ({
       aria-label="Anniversary photo gallery">
       {/* D+ Badge */}
       <motion.div
-        key={displayDays}
+        key={daysCount}
         initial={{ scale: 0.95, opacity: 0.8 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className="fixed top-4 right-4 z-50 rounded-full border border-white/60 bg-white/40 px-4 py-2 shadow-sm backdrop-blur-md">
         <span className="text-sm font-light tracking-tight text-neutral-700">
-          {displayDays !== null ? `D+${displayDays + 1}` : 'D+—'}
+          {displayValue !== null ? `D${sign}${displayValue}` : 'D —'}
         </span>
       </motion.div>
 
